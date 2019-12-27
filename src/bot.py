@@ -83,7 +83,8 @@ def main():
     token = settings.get("token", None)
     if not token:
         raise ValueError("沒有Token，記得到這邊拿 https://discordapp.com/developers/applications/")
+    bot.run(token)
 
 
 if __name__ == "__main__":
-    bot.run("token")
+    main()
