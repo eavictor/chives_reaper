@@ -71,13 +71,13 @@
 
     .. code-block::
 
-        sudo pip3 install -Ur ./src/requirements.txt
+        sudo pip3 install -Ur ./requirements.txt
 
     Windows
 
     .. code-block::
 
-        pip install -Ur ./src/requirements.txt
+        pip install -Ur ./requirements.txt
 
 4. 執行 bot.py
 
