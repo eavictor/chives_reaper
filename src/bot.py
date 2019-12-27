@@ -1,11 +1,15 @@
-import time
+import json
 from discord.ext.commands import Bot, bot_has_permissions
 
 
-bot = Bot(command_prefix="!")
+with open("settings.json", "r", encoding="utf-8") as file:
+    settings = json.loads(file.read())
 
 
-@bot.command(name="公告")
+bot = Bot(command_prefix=settings.get("command_prefix", "!"))
+
+
+@bot.command(name=settings.get("announce", "公告"))
 @bot_has_permissions(manage_messages=True)
 async def announce(ctx, message):
     # Owner Check: 確定只有乾太可以發公告
@@ -19,7 +23,7 @@ async def announce(ctx, message):
     return None
 
 
-@bot.command(name="割韭菜")
+@bot.command(name=settings.get("harvest", "割韭菜"))
 @bot_has_permissions(kick_members=True)
 async def rip(ctx, message_id=None, kick_reason=None):
     # Owner Check: 確定只有乾太可以割韭菜
@@ -54,29 +58,31 @@ async def rip(ctx, message_id=None, kick_reason=None):
     #    (1) 有身份組的大佬們(everyone除外)
     #    (2) BOT們
     #    (3) 有按emoji的村民們
+    #    然後踢掉不符合上面條件的村民
     members = bot.get_all_members()
-    chives = set()  # 要被割掉的韭菜們的名字會在這邊
+    chives = ""  # 被割掉的韭菜名單
     for member in members:
+        # 如果這個人是「有身份組的人」、「BOT」或「有回應的村民」就略過
         if not member.bot and len(member.roles) <= 1 and member.id not in active_members:
-            chives.add(member.display_name)
-            # await ctx.guild.kick(member.id, reason=kick_reason)  # TODO: 這行取消註解才會踢人！
+            # 判斷會不會超過2000字元上限，不會超過的話名單繼續加
+            if (2000 - len(chives)) > (len(member.display_name) + 1):
+                chives = " ".join([chives, member.display_name])
+            # 這個名字加上去以後會頂到兩千字元的時候就給他用力唱出去，接著再建立新名單
+            else:
+                await ctx.send(chives)
+                chives = member.display_name
+            # 割韭菜
+            await ctx.guild.kick(member.id, reason=kick_reason)
+    # 檢察名單還有沒有沒上報的，有的話就說出去
+    if len(chives) > 0:
+        await ctx.send(chives)
+    return None
 
-    # 4. 唱名被割掉的韭菜，我們懷念他們
-    await ctx.send("開始唱名被割掉的韭菜喔喔喔喔喔！")
-    # 這次要報的韭菜名單
-    kick_report = ""
-    for chive in chives:
-        # 還沒有2000字元，繼續寫韭菜名單！
-        if 2000 - len(kick_report) > chive:
-            kick_report = " ".join([kick_report, chive])
-        # 要頂到2000字元了，唱名唱起來！
-        else:
-            await ctx.send(kick_report)
-            kick_report = chive
-            time.sleep(0.01)  # 防止頂到Discord API rate limit用的，有自信不會頂到肺的話可以把這行砍掉喔 :)
-    if len(kick_report) > 0:
-        await ctx.send(kick_report)
-    return
+
+def main():
+    token = settings.get("token", None)
+    if not token:
+        raise ValueError("沒有Token，記得到這邊拿 https://discordapp.com/developers/applications/")
 
 
 if __name__ == "__main__":
