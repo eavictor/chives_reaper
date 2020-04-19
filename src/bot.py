@@ -51,7 +51,7 @@ async def rip(ctx, message_id=None, kick_reason=None):
     # 2. 找出有回應的user
     active_members = set()  # 有回應的member
     for reaction in message.reactions:
-        for user in reaction.users().flatten():
+        for user in await reaction.users().flatten():
             active_members.add(user.id)  # 只加入user id節省記憶體空間
 
     # 3. 找出全部伺服器的members，過濾掉以下：
@@ -72,7 +72,7 @@ async def rip(ctx, message_id=None, kick_reason=None):
                 await ctx.send(chives)
                 chives = member.display_name
             # 割韭菜
-            await ctx.guild.kick(member.id, reason=kick_reason)
+            # await ctx.guild.kick(member.id, reason=kick_reason)
     # 檢察名單還有沒有沒上報的，有的話就說出去
     if len(chives) > 0:
         await ctx.send(chives)
