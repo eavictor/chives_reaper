@@ -13,7 +13,7 @@ bot = Bot(command_prefix=settings.get("command_prefix", "!"))
 @bot_has_permissions(manage_messages=True)
 async def announce(ctx, message):
     # Owner Check: 確定只有乾太可以發公告
-    if not message.author.id == ctx.guild.owner.id:
+    if not ctx.message.author.id == ctx.guild.owner.id:
         await ctx.send(f"{ctx.message.author.display_name} 這個87嘗試偷發公告，當BOT是塑膠做的嗎？")
         await ctx.message.delete()
         return None
